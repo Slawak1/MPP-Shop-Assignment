@@ -3,78 +3,118 @@
 #include <stdlib.h>
 
 struct Product {
+	// datatype struct contain product name and price
 	char* name;
 	double price;
 };
 
 struct ProductStock {
+	// datatype struct contain stock for shop - nested struct Product and quantity
 	struct Product product;
 	int quantity;
 };
 
 struct Shop {
+	// datatype struct contain shop stock and cash
 	double cash;
 	struct ProductStock stock[20];
-	int index;
+	int index; // current index of stock list 
 };
 
 struct Customer {
+	// datatype struct contains Customer details name, budget and shopping list
 	char* name;
 	double budget;
 	struct ProductStock shoppingList[10];
-	int index;
+	int index; // current index of shop list
 };
 
 void printProduct(struct Product p)
+/* 
+	Method to print information about product
+	Parameters:
+		p : struct : Holds information about product name and price
+*/
 {
 	printf("PRODUCT NAME: %s \nPRODUCT PRICE: %.2f\n", p.name, p.price);
 	printf("-------------\n");
 }
 
 void printCustomer(struct Customer c)
-{
+/*
+	Method to print customer details and shopping list 
+	Parameters:
+		c : struct : Holds information about customer name, budget and shopping list 
+*/
+{	
+	// print customer name and budget
 	printf("CUSTOMER NAME: %s \nCUSTOMER BUDGET: %.2f\n", c.name, c.budget);
 	printf("-------------\n");
-	for(int i = 0; i < c.index; i++)
-	{
-		printProduct(c.shoppingList[i].product);
-		printf("%s ORDERS %d OF ABOVE PRODUCT\n", c.name, c.shoppingList[i].quantity);
-		double cost = c.shoppingList[i].quantity * c.shoppingList[i].product.price; 
-		printf("The cost to %s will be €%.2f\n", c.name, cost);
+
+	// iterates over customer shopping list 
+	for(int i = 0; i < c.index; i++) // 
+	{	
+		// method call printProduct
+		printProduct(c.shoppingList[i].product); // prints product from shopping list 
+		printf("%s ORDERS %d OF ABOVE PRODUCT\n", c.name, c.shoppingList[i].quantity); // prints information about customer name and quantity
+		double cost = c.shoppingList[i].quantity * c.shoppingList[i].product.price; // calculate cost
+		printf("The cost to %s will be €%.2f\n", c.name, cost); // print costs
 	}
 }
 
 struct Shop createAndStockShop()
+/*
+	Method to create Shop, read stock from CSV file 
+
+	Returns:
+		shop : struct 
+*/
 {
-    FILE * fp;
+    FILE * fp; 
     char * line = NULL;
     size_t len = 0;
     size_t read;
 
-    fp = fopen("../stock.csv", "r");
+    fp = fopen("../stock.csv", "r");  // opens csv file 
+
+	// if fp is null exit program
     if (fp == NULL)
         exit(EXIT_FAILURE);
-
-	read = getline(&line, &len, fp);
-	float cash = atof(line);
-	// printf("cash in shop is %.2f\n", cash);
 	
+	read = getline(&line, &len, fp);
+
+	// convert string to float
+	float cash = atof(line);
+	
+	// create shop and initiate cash variable
 	struct Shop shop = { cash };
 
+	// loop 
     while ((read = getline(&line, &len, fp)) != -1) {
-        // printf("Retrieved line of length %zu:\n", read);
-        // printf("%s IS A LINE", line);
+        
+		// method strtok breaks string str into a tokens using delimiter "," as string
 		char *n = strtok(line, ",");
 		char *p = strtok(NULL, ",");
 		char *q = strtok(NULL, ",");
+
+		// convert variables from string 
 		int quantity = atoi(q);
 		double price = atof(p);
+
+		// method malloc allocates the requested memory and returns a pointer to it
+		// in below case is memory alocated for size of 50 characters 
 		char *name = malloc(sizeof(char) * 50);
+
+		// method to copythe string pointed by source n to the destination name
 		strcpy(name, n);
+
+		// create product and stockItem
 		struct Product product = { name, price };
 		struct ProductStock stockItem = { product, quantity };
+
+		// increase shop stock index
 		shop.stock[shop.index++] = stockItem;
-		// printf("NAME OF PRODUCT %s PRICE %.2f QUANTITY %d\n", name, price, quantity);
+		
     }
 	
 	return shop;
@@ -90,6 +130,8 @@ void printShop(struct Shop s)
 	}
 }
 
+
+
 int main(void) 
 {
 	struct Shop shop = createAndStockShop();
@@ -97,3 +139,4 @@ int main(void)
 
     return 0;
 }
+
