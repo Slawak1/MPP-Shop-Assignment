@@ -37,7 +37,7 @@ void printProduct(struct Product p)
 */
 {
 	printf("PRODUCT NAME: %s \nPRODUCT PRICE: %.2f\n", p.name, p.price);
-	printf("-------------\n");
+	//printf("-------------\n");
 }
 
 void printCustomer(struct Customer c)
@@ -127,15 +127,53 @@ void printShop(struct Shop s)
 	{
 		printProduct(s.stock[i].product);
 		printf("The shop has %d of the above\n", s.stock[i].quantity);
+		printf("------------------\n");
 	}
 }
 
+void displayMenu(struct Shop shop)
+{
+	printf("##################################\n");
+	printf("#                                #\n");
+	printf("#       WELCOME TO MY SHOP       #\n");
+	printf("#                                #\n");
+	printf("##################################\n");
+	printf("\n");
+	printf("1. Print Shop Stock\n");
+	printf("2. Test Shop\n");
+	printf("3. Live Mode\n");
+	printf("0. Exit\n");
 
+
+	int choice = -1;
+
+	while (choice != 0)
+	{
+		fflush(stdin);
+		printf("\nPlease choose an option: ");
+		scanf("%d",&choice);
+		printf("\n");
+
+		if (choice == 1)
+		{
+			printShop(shop);
+		} else if (choice == 2)
+		{
+			printf("To be completed");
+		} else if (choice == 3)
+		{
+			printf("Welcome in Live mode");
+		}
+	}
+	printf("\nBye Bie Bou.");
+}
 
 int main(void) 
 {
 	struct Shop shop = createAndStockShop();
-	printShop(shop);
+	displayMenu(shop);
+	
+	// printShop(shop);
 
     return 0;
 }
