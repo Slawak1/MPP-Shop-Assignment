@@ -132,6 +132,10 @@ void printShop(struct Shop s)
 }
 
 void displayMenu(struct Shop shop)
+/* 
+	Method to print menu, that user can choose between options,
+	
+*/
 {
 	printf("##################################\n");
 	printf("#                                #\n");
@@ -144,9 +148,10 @@ void displayMenu(struct Shop shop)
 	printf("3. Live Mode\n");
 	printf("0. Exit\n");
 
-
+	// create variable choice and assign -1
 	int choice = -1;
 
+	
 	while (choice != 0)
 	{
 		fflush(stdin);
@@ -165,7 +170,7 @@ void displayMenu(struct Shop shop)
 			printf("Welcome in Live mode");
 		}
 	}
-	printf("\nBye Bie Bou.");
+	printf("\nBye.");
 }
 
 int main(void) 
