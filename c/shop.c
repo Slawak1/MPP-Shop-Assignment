@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 struct Product {
 	// datatype struct contain product name and price
@@ -120,6 +121,13 @@ struct Shop createAndStockShop()
 	return shop;
 }
 
+void clearScreen()
+/*Method to Clear screen */
+{
+  const char *CLEAR_SCREEN_ANSI = "\e[1;1H\e[2J";
+  write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 12);
+}
+
 void printShop(struct Shop s)
 {
 	printf("Shop has %.2f in cash\n", s.cash);
@@ -131,9 +139,137 @@ void printShop(struct Shop s)
 	}
 }
 
+// --------------- TEST MODE SECTION ----------------// 
+
+
+
+void testLowBudget()
+{
+	printf("Reading CSV file");
+
+
+}
+
+void testMenu()
+{
+	printf("##################################\n");
+	printf("#                                #\n");
+	printf("#       WELCOME TO MY SHOP       #\n");
+	printf("#          (TEST MODE)           #\n");
+	printf("##################################\n");
+	printf("\n");
+	printf("1. Test Low Budget\n");
+	printf("2. Test Not in Stock\n");
+	printf("3. Test Not enough Stock\n");
+	printf("0. Exit\n");
+
+	int choice = -1;
+
+	while (choice != 0)
+	{
+		fflush(stdin);
+		printf("\nPlease choose an option: ");
+		scanf("%d",&choice);
+		printf("\n");
+
+		if(choice == 1)
+		{
+			printf("Load Test Low Budget");
+		} else if (choice == 2)
+		{
+			printf("Load Test Not in Stock");
+		} else if (choice == 3)
+		{
+			printf("Load Test Not enough Stock");
+
+		} else if (choice == 0)
+		{
+			clearScreen();
+			printf("##################################\n");
+			printf("#                                #\n");
+			printf("#       WELCOME TO MY SHOP       #\n");
+			printf("#                                #\n");
+			printf("##################################\n");
+			printf("\n");
+			printf("1. Print Shop Stock\n");
+			printf("2. Test Shop\n");
+			printf("3. Live Mode\n");
+			printf("0. Exit\n");
+
+		}
+	
+	}
+	
+}
+
+// ---------- GET ORDER FROM SHOPPING LIST -------------//
+
+struct Order readOrderCSV(struct Shop s, char* csvfile)
+{	
+	//char* name;
+	//struct Product product;
+
+	FILE * fp;
+	char * line = NULL;
+	size_t len = 0;
+	size_t read;
+
+	fp = fopen(csvfile,"r");
+
+	if (fp == NULL)
+		printf("Sorry but order is empty, I am closing now!");
+		exit(EXIT_FAILURE);
+	
+	getline(&line, &line,fp);
+
+	char *cName = strtok(line,",");
+	char *cBudget = strtok(line,",");
+
+
+	char *custName = malloc(sizeof(char)*50);
+	strcpy(custName,cName);
+
+	double custBudget = atof(cBudget);
+
+	struct Customer customer = {custName, custBudget};
+
+
+
+	while ((read = getline(&line, &len, fp)) != -1)
+	{
+		char *p = strtok(line, ",");
+		char *qt = strtok(NULL,",");
+		
+		int prodQuant = atoi(qt);
+		char *prodName = malloc(sizeof(char)*50);
+		strcpy(prodName,p);
+
+		struct Product product = {prodName, getProduct(s,prodName).price};
+		struct ProductStock listItem = {product, orderQuant};
+
+		customer.shoppingList[customer.index++] = listItem;
+
+		
+	}
+
+	
+
+	return customer;
+
+};
+
+void shoppingList(struct Shop shop)
+/* Method to get order from shopping list  */
+{
+	printf("Get order from shopping list\n");
+	struct Customer customer = readOrderCSV(shop, "../order.csv");
+
+}
+
 void displayMenu(struct Shop shop)
 /* 
 	Method to print menu, that user can choose between options,
+	param : struct Shop :  
 	
 */
 {
@@ -144,8 +280,9 @@ void displayMenu(struct Shop shop)
 	printf("##################################\n");
 	printf("\n");
 	printf("1. Print Shop Stock\n");
-	printf("2. Test Shop\n");
-	printf("3. Live Mode\n");
+	printf("2. Get order from Shopping List\n");
+	printf("3. Test Shop\n");
+	printf("4. Live Mode\n");
 	printf("0. Exit\n");
 
 	// create variable choice and assign -1
@@ -161,10 +298,18 @@ void displayMenu(struct Shop shop)
 
 		if (choice == 1)
 		{
+			
 			printShop(shop);
-		} else if (choice == 2)
+		}else if (choice == 2)
 		{
-			printf("To be completed");
+			shoppingList(shop);
+		} 
+		
+		else if (choice == 3)
+		{
+			clearScreen();
+			testMenu();
+
 		} else if (choice == 3)
 		{
 			printf("Welcome in Live mode");
@@ -173,6 +318,11 @@ void displayMenu(struct Shop shop)
 	printf("\nBye.");
 }
 
+
+
+
+
+// -------------------------------- //
 int main(void) 
 {
 	struct Shop shop = createAndStockShop();
