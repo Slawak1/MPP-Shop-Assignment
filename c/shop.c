@@ -30,6 +30,12 @@ struct Customer {
 	int index; // current index of shop list
 };
 
+
+
+//####################################################################//
+
+
+
 void printProduct(struct Product p)
 /* 
 	Method to print information about product
@@ -47,7 +53,9 @@ void printCustomer(struct Customer c)
 	Parameters:
 		c : struct : Holds information about customer name, budget and shopping list 
 */
+	
 {	
+	double total_price = 0.0;
 	// print customer name and budget
 	printf("CUSTOMER NAME: %s \nCUSTOMER BUDGET: %.2f\n", c.name, c.budget);
 	printf("-------------\n");
@@ -59,8 +67,14 @@ void printCustomer(struct Customer c)
 		printProduct(c.shoppingList[i].product); // prints product from shopping list 
 		printf("%s ORDERS %d OF ABOVE PRODUCT\n", c.name, c.shoppingList[i].quantity); // prints information about customer name and quantity
 		double cost = c.shoppingList[i].quantity * c.shoppingList[i].product.price; // calculate cost
-		printf("The cost to %s will be €%.2f\n", c.name, cost); // print costs
+		printf("The cost to %s will be e%.2f\n", c.name, cost); // print costs
+		printf("---------------\n");
+		total_price += cost;
 	}
+
+	printf("%s's Provisional total cost: %.2f\n", c.name, total_price);
+	printf("%s's Provisional updated budget: %.2f\n", c.name, (c.budget - total_price));
+	printf("#######################\n");
 }
 
 struct Shop createAndStockShop()
@@ -76,7 +90,7 @@ struct Shop createAndStockShop()
     size_t len = 0;
     size_t read;
 
-    fp = fopen("../stock.csv", "r");  // opens csv file 
+    fp = fopen("..\\stock.csv", "r");  // opens csv file 
 
 	// if fp is null exit program
     if (fp == NULL)
@@ -121,16 +135,31 @@ struct Shop createAndStockShop()
 	return shop;
 }
 
+struct Product getProduct(struct Shop s, char* pname){
+   // check the shop for a product and return it
+   struct Product p;
+   for (int i = 0; i < s.index; i++){
+      if(strcmp(s.stock[i].product.name,pname)==0){
+        p = s.stock[i].product;
+      }
+   }
+   return p;
+};
+
+
 void clearScreen()
-/*Method to Clear screen */
+/*
+https://stackoverflow.com/questions/2347770/how-do-you-clear-the-console-screen-in-c
+Method to Clear screen that will work for linux, windows and Mac OS. 
+*/
 {
-  const char *CLEAR_SCREEN_ANSI = "\e[1;1H\e[2J";
-  write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 12);
+  system("cls||clear");
 }
 
 void printShop(struct Shop s)
 {
 	printf("Shop has %.2f in cash\n", s.cash);
+	printf("----------------\n");
 	for (int i = 0; i < s.index; i++)
 	{
 		printProduct(s.stock[i].product);
@@ -139,19 +168,181 @@ void printShop(struct Shop s)
 	}
 }
 
+
+struct Customer CustOrder(struct Shop s, char* order_csv_file)
+{	
+	FILE * fp;
+	char * line = NULL;
+	size_t len = 0;
+	size_t read;
+
+	fp = fopen(order_csv_file,"r");
+
+	getline(&line, &len, fp);
+
+	char *cName = strtok(line,",");
+	char *cBudget = strtok(NULL,",");
+
+	char *custName = malloc(sizeof(char)*50);
+	strcpy(custName,cName);
+
+	double custBudget = atof(cBudget);
+
+	struct Customer customer = {custName, custBudget};
+
+	while ((read = getline(&line, &len, fp)) != -1)
+	{
+		
+		char *p = strtok(line, ",");
+		char *qt = strtok(NULL,",");
+		
+		int prodQuant = atoi(qt);
+		char *prodName = malloc(sizeof(char)*50);
+		strcpy(prodName,p);
+
+		struct Product product = {prodName, getProduct(s,prodName).price};
+		struct ProductStock listItem = {product, prodQuant};
+
+		customer.shoppingList[customer.index++] = listItem;	
+	}
+	return customer;
+};
+
+
+int product_compare (char customer_item[], char shop_item[])
+/*  
+	Function to compare customer item from shopping list and item from shop stock,
+	
+	Strings are actually one-dimensional array of characters terminated by a null character '\0'. 
+	Thus a null-terminated string contains the characters that comprise the string followed by a null.
+
+	e.g. char greeting[6] = {'H', 'e', 'l', 'l', 'o', '\0'};
+
+	We can loop and compare each character from strings to check if the characters are the same. 
+	When Null Character '\0' is reached we can break loop.
+
+	param : arr : customer_item[] - item from customer shopping list  
+	param : arr : shop_item[] - item from shop stock list
+
+	return : int
+*/
+{
+	int index = 0; // Declaring variable index 
+
+	// while loop comparing the letters with the given index, if the letters are the same, 
+	// the index is increased by one and the operation is repeated.
+	while (customer_item[index] == shop_item[index])
+	{	
+		// if if any of the strings reaches the last null character, the loop is terminated
+		if(customer_item[index] == '\0' || shop_item[index] == '\0')
+			break;
+
+		// increment index 
+		index++;
+	}
+
+	// if for the same index, for both strings we get null character, it means that both strings are the same and the value 1 is returned
+	if (customer_item[index] == '\0' && shop_item[index] == '\0')
+	{
+		return 1;
+	}
+		
+	else
+	{
+		return -1;
+	}
+	
+}
+
+void finishOrder(struct Shop* s, struct Customer* c)
+{
+	/*  
+		The task of this function is to check whether a given order can be completed and to update the shop parameters.
+
+		In for loop:
+			1. We compare whether a given item from the client's list is in the store's assortment.
+			2. We check whether we have a sufficient quantity of a given product
+			3. we check whether the client has a sufficient amount of cash in the budget.
+
+		If the above conditions are met, we execute the order:
+		 - we reduce shop quantity,
+		 - we add order value to shop cash 
+		 - we reduce the client's budget.
+
+		param : struct Shop 
+		param : struct Customer
+	*/
+	
+	
+	// for loop over a customer shopping list
+	for (int i = 0; i<c->index; i++)
+	{
+
+		char *customer_item = malloc(sizeof(char) * 50); // Declare variable to hold product name
+		strcpy(customer_item, c->shoppingList[i].product.name); 
+
+		int customer_quantity = c->shoppingList[i].quantity; // Declare variable to hold customer quantity
+
+		double product_price = c->shoppingList[i].product.price; // Declare variable to hold product price
+		double order_value = customer_quantity * product_price; // variable to store order value (quantity * item_price)
+		
+		// inner loop over a shop products 
+		for (int j = 0; j<s->index; j++)
+		{
+			
+			char *shop_item = malloc(sizeof(char) * 50);
+			int shop_quantity = s->stock[j].quantity; // Declare variable to hold shop quantity for each product
+
+			strcpy(shop_item, s->stock[j].product.name);	
+				
+			// compare two products by it's name and store result in variable 
+			int result_product = product_compare( customer_item, shop_item ); 
+			
+			// if result_product is equal 1 it means that product from sopping list was found in shop stock
+			if (result_product == 1)
+			{
+				// if the difference between shop_quantity and customer_quantity is greater than zero, the order can be fulfilled
+				if (shop_quantity - customer_quantity >= 0)
+				{
+					// if the order value is lower than the client's budget, the order can be processed
+					if (order_value < c->budget)
+					{
+						// Update stock quantity
+						s->stock[j].quantity = shop_quantity - customer_quantity;
+						// Update shop cash
+						s->cash = s->cash + order_value;
+						// Update customer budget
+						c->budget = c->budget - order_value;
+						printf("You bought %d of %s \n",customer_quantity,customer_item);
+					}
+					else
+					{
+						printf("Sorry, but you are short of e%.2f to buy %d of %s", (order_value - c->budget), customer_quantity, customer_item );
+					}
+				}
+				else
+				{
+					printf("Sorry, We have not enough stock of %s\n",customer_item );	
+				}
+			}
+			else
+			{
+				//printf("Sorry, We dont have %s in our stock\n",customer_item );	
+			} 
+		}	
+	}
+	printf("*******************\n");
+}	
+
+	
+
+
 // --------------- TEST MODE SECTION ----------------// 
 
 
-
-void testLowBudget()
+void testMenu(struct Shop shop)
 {
-	printf("Reading CSV file");
-
-
-}
-
-void testMenu()
-{
+	
 	printf("##################################\n");
 	printf("#                                #\n");
 	printf("#       WELCOME TO MY SHOP       #\n");
@@ -174,10 +365,20 @@ void testMenu()
 
 		if(choice == 1)
 		{
-			printf("Load Test Low Budget");
+			printf("Load Test Low Budget\n");
+			struct Customer customer = CustOrder(shop, "..\\test_low_budget.csv");
+			finishOrder(&shop, &customer);
+			printf("\n");
+
+
+
 		} else if (choice == 2)
 		{
-			printf("Load Test Not in Stock");
+			printf("Load Test Not in Stock from CSV file \n");
+			struct Customer customer_stock = CustOrder(shop, "..\\test_not_in_stock.csv");
+			finishOrder(&shop, &customer_stock);
+			printf("\n");
+
 		} else if (choice == 3)
 		{
 			printf("Load Test Not enough Stock");
@@ -192,8 +393,9 @@ void testMenu()
 			printf("##################################\n");
 			printf("\n");
 			printf("1. Print Shop Stock\n");
-			printf("2. Test Shop\n");
-			printf("3. Live Mode\n");
+			printf("2. Get order from Shopping List\n");
+			printf("3. Test Shop\n");
+			printf("4. Live Mode\n");
 			printf("0. Exit\n");
 
 		}
@@ -204,75 +406,16 @@ void testMenu()
 
 // ---------- GET ORDER FROM SHOPPING LIST -------------//
 
-struct Order readOrderCSV(struct Shop s, char* csvfile)
-{	
-	//char* name;
-	//struct Product product;
 
-	FILE * fp;
-	char * line = NULL;
-	size_t len = 0;
-	size_t read;
-
-	fp = fopen(csvfile,"r");
-
-	if (fp == NULL)
-		printf("Sorry but order is empty, I am closing now!");
-		exit(EXIT_FAILURE);
-	
-	getline(&line, &line,fp);
-
-	char *cName = strtok(line,",");
-	char *cBudget = strtok(line,",");
-
-
-	char *custName = malloc(sizeof(char)*50);
-	strcpy(custName,cName);
-
-	double custBudget = atof(cBudget);
-
-	struct Customer customer = {custName, custBudget};
-
-
-
-	while ((read = getline(&line, &len, fp)) != -1)
-	{
-		char *p = strtok(line, ",");
-		char *qt = strtok(NULL,",");
-		
-		int prodQuant = atoi(qt);
-		char *prodName = malloc(sizeof(char)*50);
-		strcpy(prodName,p);
-
-		struct Product product = {prodName, getProduct(s,prodName).price};
-		struct ProductStock listItem = {product, orderQuant};
-
-		customer.shoppingList[customer.index++] = listItem;
-
-		
-	}
-
-	
-
-	return customer;
-
-};
-
-void shoppingList(struct Shop shop)
-/* Method to get order from shopping list  */
-{
-	printf("Get order from shopping list\n");
-	struct Customer customer = readOrderCSV(shop, "../order.csv");
-
-}
 
 void displayMenu(struct Shop shop)
 /* 
 	Method to print menu, that user can choose between options,
-	param : struct Shop :  
+	return : char : option choosed by user 
 	
 */
 {
+	clearScreen();
 	printf("##################################\n");
 	printf("#                                #\n");
 	printf("#       WELCOME TO MY SHOP       #\n");
@@ -285,14 +428,13 @@ void displayMenu(struct Shop shop)
 	printf("4. Live Mode\n");
 	printf("0. Exit\n");
 
-	// create variable choice and assign -1
 	int choice = -1;
-
 	
 	while (choice != 0)
 	{
-		fflush(stdin);
+		
 		printf("\nPlease choose an option: ");
+		fflush(stdin);
 		scanf("%d",&choice);
 		printf("\n");
 
@@ -300,15 +442,23 @@ void displayMenu(struct Shop shop)
 		{
 			
 			printShop(shop);
+	
 		}else if (choice == 2)
 		{
-			shoppingList(shop);
+			printf("**** Get order from ORDER.CSV shopping list ****\n\n");
+			struct Customer customer = CustOrder(shop, "..\\order.csv");
+			printCustomer(customer);
+			finishOrder(&shop, &customer);
+			printf("\n");
+
+
 		} 
 		
 		else if (choice == 3)
 		{
 			clearScreen();
-			testMenu();
+			testMenu(shop);
+			
 
 		} else if (choice == 3)
 		{
@@ -316,8 +466,10 @@ void displayMenu(struct Shop shop)
 		}
 	}
 	printf("\nBye.");
-}
 
+	
+	
+}
 
 
 
@@ -328,7 +480,6 @@ int main(void)
 	struct Shop shop = createAndStockShop();
 	displayMenu(shop);
 	
-	// printShop(shop);
 
     return 0;
 }
