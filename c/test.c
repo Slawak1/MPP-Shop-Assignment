@@ -6,6 +6,8 @@
 
 void main()
 {
+    int result;
+    
     char name = "abc";
     char name2 = "abc";
 

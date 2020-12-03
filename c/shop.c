@@ -168,7 +168,6 @@ void printShop(struct Shop s)
 	}
 }
 
-
 struct Customer CustOrder(struct Shop s, char* order_csv_file)
 {	
 	FILE * fp;
@@ -209,51 +208,6 @@ struct Customer CustOrder(struct Shop s, char* order_csv_file)
 };
 
 
-int product_compare (char customer_item[], char shop_item[])
-/*  
-	Function to compare customer item from shopping list and item from shop stock,
-	
-	Strings are actually one-dimensional array of characters terminated by a null character '\0'. 
-	Thus a null-terminated string contains the characters that comprise the string followed by a null.
-
-	e.g. char greeting[6] = {'H', 'e', 'l', 'l', 'o', '\0'};
-
-	We can loop and compare each character from strings to check if the characters are the same. 
-	When Null Character '\0' is reached we can break loop.
-
-	param : arr : customer_item[] - item from customer shopping list  
-	param : arr : shop_item[] - item from shop stock list
-
-	return : int
-*/
-{
-	int index = 0; // Declaring variable index 
-
-	// while loop comparing the letters with the given index, if the letters are the same, 
-	// the index is increased by one and the operation is repeated.
-	while (customer_item[index] == shop_item[index])
-	{	
-		// if if any of the strings reaches the last null character, the loop is terminated
-		if(customer_item[index] == '\0' || shop_item[index] == '\0')
-			break;
-
-		// increment index 
-		index++;
-	}
-
-	// if for the same index, for both strings we get null character, it means that both strings are the same and the value 1 is returned
-	if (customer_item[index] == '\0' && shop_item[index] == '\0')
-	{
-		return 1;
-	}
-		
-	else
-	{
-		return -1;
-	}
-	
-}
-
 void finishOrder(struct Shop* s, struct Customer* c)
 {
 	/*  
@@ -273,7 +227,8 @@ void finishOrder(struct Shop* s, struct Customer* c)
 		param : struct Customer
 	*/
 	
-	
+	int some_var = 0;
+
 	// for loop over a customer shopping list
 	for (int i = 0; i<c->index; i++)
 	{
@@ -296,11 +251,14 @@ void finishOrder(struct Shop* s, struct Customer* c)
 			strcpy(shop_item, s->stock[j].product.name);	
 				
 			// compare two products by it's name and store result in variable 
-			int result_product = product_compare( customer_item, shop_item ); 
-			
+			// int result_product = product_compare( customer_item, shop_item ); 
+			 int result_product = strcmp( customer_item, shop_item ); 
+
 			// if result_product is equal 1 it means that product from sopping list was found in shop stock
-			if (result_product == 1)
+			
+			if (result_product == 0)
 			{
+				some_var = 1;
 				// if the difference between shop_quantity and customer_quantity is greater than zero, the order can be fulfilled
 				if (shop_quantity - customer_quantity >= 0)
 				{
@@ -325,12 +283,18 @@ void finishOrder(struct Shop* s, struct Customer* c)
 					printf("Sorry, We have not enough stock of %s\n",customer_item );	
 				}
 			}
-			else
-			{
-				//printf("Sorry, We dont have %s in our stock\n",customer_item );	
-			} 
-		}	
+		}
+
+		if (some_var == 0)
+		{
+			printf("Sorry, We dont have %s in our stock\n",customer_item );	
+		} 
+		
+			
 	}
+
+
+
 	printf("*******************\n");
 }	
 
@@ -365,7 +329,7 @@ void testMenu(struct Shop shop)
 
 		if(choice == 1)
 		{
-			printf("Load Test Low Budget\n");
+			printf("**** Load Test Low Budget from CSV file **** \n\n");
 			struct Customer customer = CustOrder(shop, "..\\test_low_budget.csv");
 			finishOrder(&shop, &customer);
 			printf("\n");
@@ -374,30 +338,22 @@ void testMenu(struct Shop shop)
 
 		} else if (choice == 2)
 		{
-			printf("Load Test Not in Stock from CSV file \n");
+			printf("**** Load Test Not in Stock from CSV file **** \n\n");
 			struct Customer customer_stock = CustOrder(shop, "..\\test_not_in_stock.csv");
 			finishOrder(&shop, &customer_stock);
 			printf("\n");
 
 		} else if (choice == 3)
 		{
-			printf("Load Test Not enough Stock");
+			printf("**** Load Test Not enough Stock **** \n\n");
+			struct Customer customer_stock = CustOrder(shop, "..\\test_not_enough_stock.csv");
+			finishOrder(&shop, &customer_stock);
+			printf("\n");
+
 
 		} else if (choice == 0)
 		{
-			clearScreen();
-			printf("##################################\n");
-			printf("#                                #\n");
-			printf("#       WELCOME TO MY SHOP       #\n");
-			printf("#                                #\n");
-			printf("##################################\n");
-			printf("\n");
-			printf("1. Print Shop Stock\n");
-			printf("2. Get order from Shopping List\n");
-			printf("3. Test Shop\n");
-			printf("4. Live Mode\n");
-			printf("0. Exit\n");
-
+			show_options();
 		}
 	
 	}
@@ -406,14 +362,8 @@ void testMenu(struct Shop shop)
 
 // ---------- GET ORDER FROM SHOPPING LIST -------------//
 
+void show_options()
 
-
-void displayMenu(struct Shop shop)
-/* 
-	Method to print menu, that user can choose between options,
-	return : char : option choosed by user 
-	
-*/
 {
 	clearScreen();
 	printf("##################################\n");
@@ -426,14 +376,26 @@ void displayMenu(struct Shop shop)
 	printf("2. Get order from Shopping List\n");
 	printf("3. Test Shop\n");
 	printf("4. Live Mode\n");
+	printf("9. Return to Menu\n");
 	printf("0. Exit\n");
+}
+
+void displayMenu(struct Shop shop)
+/* 
+	Method to print menu, that user can choose between options,
+	return : char : option choosed by user 
+	
+*/
+{
+
+	show_options();
 
 	int choice = -1;
 	
 	while (choice != 0)
 	{
 		
-		printf("\nPlease choose an option: ");
+		printf("\nPlease choose an option (press 9 to show menu option, 0 to exit): ");
 		fflush(stdin);
 		scanf("%d",&choice);
 		printf("\n");
@@ -450,20 +412,21 @@ void displayMenu(struct Shop shop)
 			printCustomer(customer);
 			finishOrder(&shop, &customer);
 			printf("\n");
-
-
 		} 
 		
 		else if (choice == 3)
 		{
-			clearScreen();
-			testMenu(shop);
+			clearScreen(); // Call clear screen function
+			testMenu(shop); // call Test Manu for testing  
 			
-
 		} else if (choice == 3)
 		{
 			printf("Welcome in Live mode");
+		} else if (choice == 9)
+		{
+			show_options(); // call show options function
 		}
+
 	}
 	printf("\nBye.");
 
