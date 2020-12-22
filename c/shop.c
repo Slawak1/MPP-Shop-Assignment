@@ -363,7 +363,7 @@ void finishOrder(struct Shop* s, struct Customer* c)
 				}
 				else
 				{
-					printf("I'm sorry but unfortunately we don't have enough %s to cover your order for %d\n",customer_item, customer_quantity );	
+					printf("I'm sorry but unfortunately we don't have enough in stock to cover your order for %d %s\n",customer_quantity, customer_item  );	
 				}
 		}
 	}
