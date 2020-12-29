@@ -218,10 +218,10 @@ def finish_order(shop, customer):
     # iterate over the customer shopping list 
     for item in customer.shopping_list:
 
-        # for each customer item checks ProductStock 
+        # check if customer's product exists in shop stock 
         shop_item = getItem(shop, item.product.name)
         
-        # if product not found in ProductStock
+        # if product not found in shop stock 
         if shop_item == None:
             print(f"I am very sorry, but unfortunately we do not sell {item.product.name}")
         else:

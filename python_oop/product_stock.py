@@ -32,4 +32,11 @@ class ProductStock:
         return self.unit_price() * self.quantity
         
     def __repr__(self):
+        '''
+            Special Method for string representation for ProductStock object. 
+            This is how the ProductStock object will look when we call print() function.
+
+            Returns:
+                str
+        '''
         return f"{self.product} QUANTITY: {self.quantity:.0f}"
