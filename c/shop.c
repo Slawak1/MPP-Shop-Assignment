@@ -257,7 +257,14 @@ struct Customer CustOrder(struct Shop s, char* order_csv_file)
 };
 
 
-char* getProductName(struct Shop* s, char *pname){
+char* getProductName(struct Shop* s, char *pname)
+/*
+
+
+*/
+
+
+{
 
 	for(int j = 0; j < s->index; j++){
 		if(strcmp(s->stock[j].product.name,pname)==0){
@@ -388,6 +395,17 @@ struct Customer liveCustomer(struct Shop s)
 	// create live_customer variable
 	struct Customer live_customer; 
 
+	printf("Here is my stock list\n");
+	printf("--------------------------\n");
+
+
+	// loop over product stock to print product in console
+	for (int i = 0; i < s.index; i++){
+        struct Product p = s.stock[i].product;
+		printProduct(p);
+		printf("--------------------------\n");		
+      }
+
 	// read customer name from console 
 	printf("\nPLEASE ENTER YOUR NAME: ");
 	char *cust_name = malloc(sizeof(char) * 50);
@@ -411,18 +429,6 @@ struct Customer liveCustomer(struct Shop s)
 
 	printf("\n");
 
-	printf("Here is my stock list\n");
-	printf("--------------------------\n");
-
-
-	// loop over product stock to print product in console
-	for (int i = 0; i < s.index; i++){
-        struct Product p = s.stock[i].product;
-		printProduct(p);
-		printf("--------------------------\n");		
-      }
-   
-
 	printf("What Would you likte to buy? \n");
 	printf("\n");
 	printf("\n");
@@ -434,7 +440,7 @@ struct Customer liveCustomer(struct Shop s)
 	// While loop will keep asking for product name and quantity until "n" is pressed
 	while (strcmp(&choice, "n") != 0)
 	{
-		// get product name 
+		// gets product name from user
 		printf("ENTER PRODUCT NAME: ");
 		char* customer_item = malloc(sizeof(char)*50);
 		scanf("\n%[^\n]%*c", customer_item); // regular expression that reads product name without last "\n" character
@@ -442,7 +448,7 @@ struct Customer liveCustomer(struct Shop s)
 		printf("\n");
 		fflush(stdin);
 
-		// get product quantity 
+		// gets product quantity from user 
 		printf("ENTER PRODUCT QUANTITY: ");
 		int customer_quantity;
 		 
@@ -450,13 +456,14 @@ struct Customer liveCustomer(struct Shop s)
 		printf("\n");
 
 
-		
+		// creates Product,ProductStock and appends to customer shopping list. 
 		struct Product live_product = {customer_item,getProduct(s,customer_item).price};
 		struct ProductStock live_listItem = {live_product, customer_quantity};
 
 		live_customer.shoppingList[live_customer.index] = live_listItem;	
 		live_customer.index++;
 
+		// if answer is "n" while loop breaks 
 		printf("WOULD YOU LIKE TO BUY ANOTHER PRODUCT? y/n: ");
 		fflush(stdin); 
 		scanf("%s", &choice);
@@ -467,10 +474,17 @@ struct Customer liveCustomer(struct Shop s)
 
 } 
 
-// --------------- TEST MODE SECTION ----------------// 
 void show_options()
 /* 
 	Function to clear screen and display Main menu in console
+	There are 6 options in the menu:
+        1. Displays information about the store, the amount of money held, a list of products, their prices and quantity,
+        2. Loads and processes the order from a CSV file where all purchase conditions are met.
+        3. goes to Test Mode, displays the sub-menu, where we can load csv files where the purchase conditions have not been met.
+        4. option in which we go to the live version of the store. in this option, we create a customer by providing his name and budget, 
+            then create a shopping list and process the order.
+        9. Clears the console screen and returns to the main menu,
+        0. closes the shop
 
 */
 {
@@ -493,6 +507,14 @@ void show_options()
 void testMenu(struct Shop shop)
 /* 
 	Function to display shop menu in test mode in console
+	Test Mode is used to test the store in situations when some of the purchase conditions cannot be met. 
+        The menu test consists of 4 options: 
+            1. the customer does not have a sufficient budget to make a purchase, 
+            2. the customer wants to buy a product that is not in the store, 
+            3. the store does not have enough of a given product to fulfill the order. 
+            0. returns to the main menu.
+        A different CSV file is loaded for each of the three above situations.
+
 	Parameter:
 		s : struct Shop : Holds information about customer name, budget and shopping list
 */
@@ -509,8 +531,10 @@ void testMenu(struct Shop shop)
 	printf("3. Test Not enough Stock\n");
 	printf("0. Exit\n");
 
+	// creates variable choice
 	int choice = -1;
 
+	// while loop breaks when 0 is pressed
 	while (choice != 0)
 	{
 		fflush(stdin);
@@ -521,7 +545,9 @@ void testMenu(struct Shop shop)
 		if(choice == 1)
 		{
 			printf("**** Load Test Low Budget from CSV file **** \n\n");
+			// create customer from CSV file 
 			struct Customer customer = CustOrder(shop, "..\\test_low_budget.csv");
+			// finishes custoemr order 
 			finishOrder(&shop, &customer);
 			printf("\n");
 
@@ -530,20 +556,25 @@ void testMenu(struct Shop shop)
 		} else if (choice == 2)
 		{
 			printf("**** Load Test Not in Stock from CSV file **** \n\n");
+			// create customer from CSV file 
 			struct Customer customer_stock = CustOrder(shop, "..\\test_not_in_stock.csv");
+			// finishes custoemr order 
 			finishOrder(&shop, &customer_stock);
 			printf("\n");
 
 		} else if (choice == 3)
 		{
 			printf("**** Load Test Not enough Stock **** \n\n");
+			// create customer from CSV file
 			struct Customer customer_stock = CustOrder(shop, "..\\test_not_enough_stock.csv");
+			// finishes custoemr order 
 			finishOrder(&shop, &customer_stock);
 			printf("\n");
 
 
 		} else if (choice == 0)
 		{
+			// returns to main menu
 			show_options();
 		}
 	
@@ -551,21 +582,22 @@ void testMenu(struct Shop shop)
 	
 }
 
-// ---------- GET ORDER FROM SHOPPING LIST -------------//
-
 
 void displayMenu(struct Shop shop)
 /* 
-	Function to print menu, that user can choose between options
+	Adds functionality to the main menu. We are asked to choose one of the 6 options. 
+    he loop breaks when option 0 is selected. The store closes
 
 	Parameter:
 		s : struct Shop : Holds information about customer name, budget and shopping list
 */
 {
-	show_options(); // display menu
+	show_options(); // display main  menu
 
 	int choice = -1;
 	
+	// while loop breaks when 0 is pressed
+
 	while (choice != 0)
 	{
 		
@@ -576,17 +608,19 @@ void displayMenu(struct Shop shop)
 
 		if (choice == 1)
 		{
-			
+			// calls method to print shop
 			printShop(shop);
 	
 		}else if (choice == 2)
 		{
 			printf("**** Get order from ORDER.CSV shopping list ****\n\n");
+			// creates customer from csv file
 			struct Customer customer = CustOrder(shop, "..\\order.csv");
 			printf("\n");
 			printf("---===<< YOUR ORDER CONFIRMAION >>===---\n \n");
-
+			// prints customer
 			printCustomer(customer);
+			// finishes customer order
 			finishOrder(&shop, &customer);
 			printf("\n");
 		} 
@@ -603,14 +637,14 @@ void displayMenu(struct Shop shop)
 			printf("\n");
 			printf("Please Take a look around \n");
 			printf("\n");
-
+			// creates live customer
 			struct Customer live_customer = liveCustomer(shop);
 			
 			printf("\n");
 			printf("---===<< YOUR ORDER CONFIRMAION >>===---\n \n");
-			
+			// prints live mode customer
 			printCustomer(live_customer);
-
+			// finishes live customer order
 			finishOrder(&shop, &live_customer);
 			
 
@@ -620,7 +654,7 @@ void displayMenu(struct Shop shop)
 		}
 
 	}
-	printf("\nBye.");
+	printf("\nThank You for shopping with Us.");
 
 	
 	
@@ -631,6 +665,11 @@ void displayMenu(struct Shop shop)
 
 // -------------------------------- //
 int main(void) 
+/*
+	Program starts here: 
+	struct Shop as a shop variable is created
+	and main menu is displayed 
+*/
 {
 	struct Shop shop = createAndStockShop();
 	displayMenu(shop);
