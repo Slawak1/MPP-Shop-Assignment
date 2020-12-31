@@ -1,6 +1,17 @@
 
+'''
+    Student: Slawomir Sowa
+    Date: 10/12/2020
+    Student ID: G00376519
+    MultiParadigmProgramming Assignmetn
+    Title: Shop
+    Language: Python
+
+'''
+
 from shop import Shop
 from customer import Customer
+from live_customer import LiveCustomer
 import os
 
 
@@ -172,17 +183,19 @@ class RunShop:
                     print(f"{item}")
                     print(f"--------------------------")
 
-                # create an instance of a Customer class
-                live_customer = Customer()
+                # create an instance of a LiveCustomer class
+                
+                live_customer = LiveCustomer()
                 
                 # call create_live_customer method where name and budget are entered
                 live_customer.create_live_customer()
-
+                
                 print("\nWhat Would you likte to buy?\n")
 
                 # call create_shopping_list method where shopping list is created 
                 live_customer.create_shopping_list()
 
+                # Method calculate_costs is inherited from Customer Class 
                 live_customer.calculate_costs(shop.stock)
                 print("")
                 print("---===<< YOUR ORDER CONFIRMAION >>===---")

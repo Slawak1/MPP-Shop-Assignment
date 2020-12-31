@@ -36,9 +36,9 @@ class Shop:
                 self.stock.append(ps)
         
 
-    def getItem(self,name):
+    def __getItem(self,name):
         '''
-            Method to find the product in shop stock and return ShopStock object if the product is found. 
+            Private Method to find the product in shop stock and return ShopStock object if the product is found. 
             In case the product is not in the store, the value None is returned.
 
             Parameters:
@@ -72,7 +72,7 @@ class Shop:
         for item in shopping_list:
             
             # check if customer's product exists in shop stock 
-            shop_item = self.getItem(item.name())
+            shop_item = self.__getItem(item.name())
            
             # if product not in shop stock           
             if shop_item == None:

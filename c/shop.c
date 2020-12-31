@@ -1,12 +1,10 @@
 /*
 Student: Slawomir Sowa
 Date: 10/12/2020
-Student ID: G000XXXXX
+Student ID: G00376519
 MultiParadigmProgramming Assignmetn
 Title: Shop
-Laguage: C 
-
-
+Language: C 
 
 */
 
@@ -259,8 +257,13 @@ struct Customer CustOrder(struct Shop s, char* order_csv_file)
 
 char* getProductName(struct Shop* s, char *pname)
 /*
-
-
+	Function to check the shop for a product and return it
+	Parameters:
+		s : struct Shop : datatype struct contain shop stock and cash
+		pname: char : searched item in shop stock
+	
+	Return:
+		p : char : product name
 */
 
 
@@ -279,7 +282,7 @@ int getQuantity(struct Shop* s, char* pname)
 /*
 	Function to get stock quantity for product name
 	Parameters:
-		s : struct Shop : Holds information about customer name, budget and shopping list 
+		s : struct Shop : datatype struct contain shop stock and cash
 		pname : char : product name 
 	
 	Returns:
@@ -314,8 +317,9 @@ void finishOrder(struct Shop* s, struct Customer* c)
 		- we add order value to shop cash 
 		- we reduce the client's budget.
 
-	param : struct Shop 
-	param : struct Customer
+	Parameters:
+		s : struct Shop : datatype struct contain shop stock and cash
+		c : struct Customer :Holds information about customer name, budget and shopping list 
 */
 {	
 	int some_var = 0;
@@ -441,7 +445,7 @@ struct Customer liveCustomer(struct Shop s)
 	while (strcmp(&choice, "n") != 0)
 	{
 		// gets product name from user
-		printf("ENTER PRODUCT NAME: ");
+		printf("\nENTER PRODUCT NAME: ");
 		char* customer_item = malloc(sizeof(char)*50);
 		scanf("\n%[^\n]%*c", customer_item); // regular expression that reads product name without last "\n" character
 
@@ -465,8 +469,10 @@ struct Customer liveCustomer(struct Shop s)
 
 		// if answer is "n" while loop breaks 
 		printf("WOULD YOU LIKE TO BUY ANOTHER PRODUCT? y/n: ");
+		printf("\n")
 		fflush(stdin); 
 		scanf("%s", &choice);
+		
 
 	}
 	
@@ -548,6 +554,7 @@ void testMenu(struct Shop shop)
 			// create customer from CSV file 
 			struct Customer customer = CustOrder(shop, "..\\test_low_budget.csv");
 			// finishes custoemr order 
+			printCustomer(customer);
 			finishOrder(&shop, &customer);
 			printf("\n");
 
@@ -559,6 +566,7 @@ void testMenu(struct Shop shop)
 			// create customer from CSV file 
 			struct Customer customer_stock = CustOrder(shop, "..\\test_not_in_stock.csv");
 			// finishes custoemr order 
+			printCustomer(customer_stock);
 			finishOrder(&shop, &customer_stock);
 			printf("\n");
 
@@ -568,6 +576,7 @@ void testMenu(struct Shop shop)
 			// create customer from CSV file
 			struct Customer customer_stock = CustOrder(shop, "..\\test_not_enough_stock.csv");
 			// finishes custoemr order 
+			printCustomer(customer_stock);
 			finishOrder(&shop, &customer_stock);
 			printf("\n");
 

@@ -1,3 +1,13 @@
+'''
+    Student: Slawomir Sowa
+    Date: 10/12/2020
+    Student ID: G00376519
+    MultiParadigmProgramming Assignmetn
+    Title: Shop
+    Language: Python
+
+'''
+
 from dataclasses import dataclass, field
 from typing import List
 import csv
@@ -180,7 +190,7 @@ def print_customer(c,s):
     print("--------------------------")
 
 
-def getItem(shop, name):
+def __getItem(shop, name):
     '''
         I introduced this method in order to be able to quickly find a product from the client's list in the store, searching by the product name. 
         Thanks to this, I will have access to the price and number available in the store for the product that the customer is looking for.
